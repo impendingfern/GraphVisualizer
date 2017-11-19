@@ -1,2 +1,2 @@
 # GraphVisualizer
-Program to draw and edit discrete graphs.
+Program to draw, edit and output an analysis using various algorithms discrete graphs.
