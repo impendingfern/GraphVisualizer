@@ -7,6 +7,13 @@ import static javax.swing.BoxLayout.Y_AXIS;
 
 public class HelloWorld extends JFrame
 {
+    JPanel canvas;
+    JPanel ltoolbar;
+    JPanel rtoolbar;
+    JPanel output;
+    mxGraph graph = new mxGraph();
+    Object parent = graph.getDefaultParent();
+        
     public HelloWorld(){
         super("Hello, World!");
         initComponents();
@@ -20,35 +27,49 @@ public class HelloWorld extends JFrame
         JPanel rtoolbar = new JPanel();
         JPanel output = new JPanel();
                 
-        JButton vertexButton = new JButton();
-        JButton edgeButton = new JButton();
+        JButton circleVertex = new JButton();
+        JButton squareVertex = new JButton();
                 
-        vertexButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/dot_circle1600 copia.png"))); // NOI18N
-        vertexButton.setFocusable(false);
+        circleVertex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/dot_circle1600 copia.png"))); // NOI18N
+        circleVertex.setFocusable(false);
         //vertexButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         //vertexButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        //vertexButton.addActionListener(new java.awt.event.ActionListener() {
-        //public void actionPerformed(java.awt.event.ActionEvent evt) {
-            // jButton1ActionPerformed(evt);
-        //}
-        //});
+        circleVertex.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            
+        }
+        });
                 
-       edgeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/line-icon-61713-3 copia.png"))); // NOI18N
-       edgeButton.setFocusable(false);
-       edgeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-       edgeButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-       //edgeButton.addActionListener(new java.awt.event.ActionListener() {
-       //public void actionPerformed(java.awt.event.ActionEvent evt) {
-            //  jButton2ActionPerformed(evt);
-        //}
-        //});
-        canvas.setBackground(new java.awt.Color(255, 255, 255));
-        canvas.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+       squareVertex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/vector-path-square copia.png"))); // NOI18N
+       squareVertex.setFocusable(false);
+       squareVertex.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+       squareVertex.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+       squareVertex.addActionListener(new java.awt.event.ActionListener() {
+       public void actionPerformed(java.awt.event.ActionEvent evt) {
+           graph.getModel().beginUpdate();
+            try
+            {
+                Object v1 = graph.insertVertex(parent, null, null, 200, 150, 80, 30);
+                
+            }
+            
+            finally
+            {
+                graph.getModel().endUpdate();
+            }
+
+            mxGraphComponent graphComponent = new mxGraphComponent(graph);
+            
+            canvas.add(graphComponent);
+            canvas.revalidate();
+        }
+        });
         
-        rtoolbar.setSize(200, 50);
+        
+        
         rtoolbar.setLayout(new BoxLayout(rtoolbar, Y_AXIS));
-        rtoolbar.add(vertexButton);
-        rtoolbar.add(edgeButton);
+        rtoolbar.add(circleVertex);
+        rtoolbar.add(squareVertex);
                 
         getContentPane().setLayout(new BorderLayout());
 	getContentPane().add(canvas, BorderLayout.CENTER);
@@ -56,27 +77,12 @@ public class HelloWorld extends JFrame
         getContentPane().add(rtoolbar, BorderLayout.LINE_END);
         getContentPane().add(output, BorderLayout.PAGE_END);
     }
-
+    
     public class newPanel extends JPanel{
         public newPanel(){
-            mxGraph graph = new mxGraph();
-            Object parent = graph.getDefaultParent();
-
-            graph.getModel().beginUpdate();
-            try
-            {
-                Object v1 = graph.insertVertex(parent, null, "Hello", 200, 150, 80, 30);
-                Object v2 = graph.insertVertex(parent, null, "World!", 340, 250, 80, 30);
-                graph.insertEdge(parent, null, "Edge", v1, v2);
-            }
-            finally
-            {
-                graph.getModel().endUpdate();
-            }
-
-            mxGraphComponent graphComponent = new mxGraphComponent(graph);
             this.setLayout(new BorderLayout());
-            this.add(graphComponent, BorderLayout.CENTER);
+            this.setBackground(new java.awt.Color(255, 255, 255));
+            this.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         }
     }
         
