@@ -1,5 +1,6 @@
 import com.mxgraph.analysis.StructuralException;
 import com.mxgraph.analysis.mxAnalysisGraph;
+import com.mxgraph.analysis.mxGraphProperties;
 import com.mxgraph.analysis.mxGraphStructure;
 import com.mxgraph.layout.mxOrganicLayout;
 import com.mxgraph.swing.handler.mxRubberband;
@@ -10,7 +11,9 @@ import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import static javax.swing.BoxLayout.Y_AXIS;
 
 
@@ -20,10 +23,15 @@ public class Visualizer extends JFrame
     JPanel ltoolbar;
     JPanel rtoolbar;
     JPanel output;
+    JButton circleVertex;
+    JButton deleteButton;
+    JTextArea textOut;
     JMenu menu;
     JMenuBar menubar;
     JMenuItem menubutton1;
     JMenuItem menubutton2;
+    JMenuItem menubutton3;
+    JMenuItem menubutton4;
     mxGraph graph;
     mxAnalysisGraph aGraph;
     mxGraphStructure structGraph;
@@ -48,8 +56,10 @@ public class Visualizer extends JFrame
         JPanel output = new JPanel();
         JPanel leftoutput = new JPanel();
         
-        JButton circleVertex = new JButton();
-        JTextArea textOut = new JTextArea(10, 75);
+        //Crea elementos del frame
+        circleVertex = new JButton();
+        deleteButton = new JButton();
+        textOut = new JTextArea(10, 75);
         
         //Crea grafo y grafo de analisis
         vertices = new ArrayList<Object>();
@@ -88,13 +98,29 @@ public class Visualizer extends JFrame
         });
         menu.add(menubutton1);
         
-        menubutton2 = new JMenuItem("Grafo Dirigido");
+        menubutton2 = new JMenuItem("Grafo Complementario");
         menubutton2.addActionListener(new java.awt.event.ActionListener(){
             public void actionPerformed(java.awt.event.ActionEvent e){
-                
+                structGraph.complementaryGraph(aGraph);
             }
         });
         menu.add(menubutton2);
+        
+        menubutton3 = new JMenuItem("Hacer Conexo");
+        menubutton3.addActionListener(new java.awt.event.ActionListener(){
+            public void actionPerformed(java.awt.event.ActionEvent e){
+                structGraph.makeConnected(aGraph);
+            }
+        });
+        menu.add(menubutton3);
+        
+        menubutton4 = new JMenuItem("Grafo no dirigido");
+        menubutton4.addActionListener(new java.awt.event.ActionListener(){
+            public void actionPerformed(java.awt.event.ActionEvent e){
+            }
+        });
+        menu.add(menubutton4);
+        
         //Agrega el menu creado a menubar
         menubar.add(menu);
        
@@ -130,6 +156,7 @@ public class Visualizer extends JFrame
         //Crea el estilo ROUNDED para aplicar a los vertices
         mxStylesheet stylesheet = graph.getStylesheet();
         Hashtable<String, Object> style = new Hashtable<String, Object>();
+        
         style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
         style.put(mxConstants.STYLE_OPACITY, 65);
         style.put(mxConstants.STYLE_FONTCOLOR, "#ffe28a");
@@ -137,8 +164,9 @@ public class Visualizer extends JFrame
         style.put(mxConstants.STYLE_FONTSIZE, 14);
         style.put(mxConstants.STYLE_STROKECOLOR, "#");
         style.put(mxConstants.STYLE_STROKE_OPACITY, 100);
+        stylesheet.getDefaultEdgeStyle().put(mxConstants.STYLE_ENDARROW, mxConstants.NONE);
         stylesheet.putCellStyle("ELLIPSE", style);
-       
+        
         //Crear boton para agregar vertices
         circleVertex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/dot_circle1600 copia.png"))); // NOI18N
         circleVertex.setFocusable(false);
@@ -169,12 +197,21 @@ public class Visualizer extends JFrame
         }
         });
         
+        deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/dot_circle1600 copia.png"))); // NOI18N
+        deleteButton.setFocusable(false);
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+           graph.removeCells();
+        }
+        });
+        
         toolbar.setLayout(new BoxLayout(toolbar, Y_AXIS));
         output.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         GridBagConstraints d = new GridBagConstraints();
       
         toolbar.add(circleVertex);
+        toolbar.add(deleteButton);
         output.add(leftoutput, c);
         output.add(textOut, d);
         
