@@ -1,7 +1,7 @@
 import com.mxgraph.analysis.StructuralException;
 import com.mxgraph.analysis.mxAnalysisGraph;
-import com.mxgraph.analysis.mxGraphProperties;
 import com.mxgraph.analysis.mxGraphStructure;
+import com.mxgraph.layout.mxCircleLayout;
 import com.mxgraph.layout.mxOrganicLayout;
 import com.mxgraph.swing.handler.mxRubberband;
 import javax.swing.*;
@@ -10,7 +10,6 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -26,24 +25,31 @@ public class Visualizer extends JFrame
     JButton circleVertex;
     JButton deleteButton;
     JTextArea textOut;
-    JMenu menu;
+    JMenu propmenu;
+    JMenu layoutmenu;
     JMenuBar menubar;
     JMenuItem menubutton1;
     JMenuItem menubutton2;
     JMenuItem menubutton3;
     JMenuItem menubutton4;
+    JMenuItem circlebutton;
+    JMenuItem organicbutton;
     mxGraph graph;
     mxAnalysisGraph aGraph;
     mxGraphStructure structGraph;
+    mxStylesheet stylesheet;
     Object parent;
-    ArrayList<Object> vertices;
-    ArrayList<Object> edges;
+    Object[] vertices;
+    Object[] edges;
     mxOrganicLayout organic;
+    mxCircleLayout circle;
     int index = 0;
     int edgenum;
+    int x, y;
+    boolean directed;
         
     public Visualizer(){
-        super("Hello, World!");
+        super("Visualizador de Grafos");
         initComponents();
     }
     
@@ -59,91 +65,113 @@ public class Visualizer extends JFrame
         //Crea elementos del frame
         circleVertex = new JButton();
         deleteButton = new JButton();
-        textOut = new JTextArea(10, 75);
+        textOut = new JTextArea(10, 78);
         
         //Crea grafo y grafo de analisis
-        vertices = new ArrayList<Object>();
-        edges = new ArrayList<Object>();
         graph = new mxGraph();
         aGraph = new mxAnalysisGraph();
         structGraph = new mxGraphStructure();
         
+        //Configura grafo
+        directed = false;
         aGraph.setGraph(graph);
         parent = graph.getDefaultParent();
+        x = 30;
+        y = 150;
         organic = new mxOrganicLayout(graph);//para implementar un layout organico
+        circle = new mxCircleLayout(graph);
         
         //Crea MenuBar
-        menu = new JMenu("Grafo");
+        propmenu = new JMenu("Grafo");
+        layoutmenu = new JMenu("Diseño");
         menubar = new JMenuBar();
         
-        //Agrega items al menu
+        //Agrega items al propmenu
         menubutton1 = new JMenuItem("Mostrar propiedades");
         menubutton1.addActionListener(new java.awt.event.ActionListener(){
             public void actionPerformed(java.awt.event.ActionEvent e){
                 
-                textOut.setText("Numero de vertices: " + vertices.size() + "\n");
-                textOut.append("Numero de aristas: " + edges.size() + "\n");
+                vertices = graph.getChildVertices(parent);
+                edges = graph.getChildEdges(parent);
+                textOut.setText("Numero de vertices: " + vertices.length + "\n");
+                textOut.append("Numero de aristas: " + edges.length + "\n");
                 
-                if(structGraph.isConnected(aGraph) == true)
-                    textOut.append("El grafo es conexo\n");
-                else
-                    textOut.append("El grafo es disconexo\n");
-                try{
-                    structGraph.regularity(aGraph);
-                    textOut.append("El grafo es regular\n");
-                }catch(StructuralException s){
-                    textOut.append("El grafo no es regular\n");
+                if(directed == false){
+                    if(structGraph.isConnected(aGraph) == true)
+                        textOut.append("El grafo es conexo\n");
+                    else
+                        textOut.append("El grafo es disconexo\n");
+                    try{
+                        structGraph.regularity(aGraph);
+                        textOut.append("El grafo es regular\n");
+                    }catch(StructuralException s){
+                        textOut.append("El grafo no es regular\n");
+                    }
+                     textOut.append("El grafo no es dirigido");
                 }
+                else
+                    textOut.append("El grafo es dirigido");
+                
+                   
             }
         });
-        menu.add(menubutton1);
+        propmenu.add(menubutton1);
         
         menubutton2 = new JMenuItem("Grafo Complementario");
         menubutton2.addActionListener(new java.awt.event.ActionListener(){
             public void actionPerformed(java.awt.event.ActionEvent e){
                 structGraph.complementaryGraph(aGraph);
+                edges = graph.getChildEdges(parent);
             }
         });
-        menu.add(menubutton2);
+        propmenu.add(menubutton2);
         
         menubutton3 = new JMenuItem("Hacer Conexo");
         menubutton3.addActionListener(new java.awt.event.ActionListener(){
             public void actionPerformed(java.awt.event.ActionEvent e){
                 structGraph.makeConnected(aGraph);
+                edges = graph.getChildEdges(parent);
             }
         });
-        menu.add(menubutton3);
+        propmenu.add(menubutton3);
         
-        menubutton4 = new JMenuItem("Grafo no dirigido");
+        
+        menubutton4 = new JMenuItem("Grafo dirigido");
         menubutton4.addActionListener(new java.awt.event.ActionListener(){
             public void actionPerformed(java.awt.event.ActionEvent e){
+                if(directed == false){
+                    graph.setCellStyle("DIGRAFO", edges);
+                    directed = true;
+                }
+                
+                else{
+                    graph.setCellStyle("GRAFO", edges);
+                    directed = false;
+                }
             }
         });
-        menu.add(menubutton4);
+        propmenu.add(menubutton4);
         
-        //Agrega el menu creado a menubar
-        menubar.add(menu);
-       
-        /*canvas.addMouseListener(new java.awt.event.MouseListener(){
-              public void mousePressed(MouseEvent e) {
-              }
-
-              public void mouseReleased(MouseEvent e) {
-              }
-
-              public void mouseEntered(MouseEvent e) {
-              }
-
-              public void mouseExited(MouseEvent e) {
-              }
-
-              public void mouseClicked(MouseEvent e) {
-                  int source = e.getButton();
-                  if(source == e.BUTTON3){
-                      pop.show(canvas, 50, 50);
-                  }
-               }
-        });*/
+        //Agrega el propmenu creado a menubar
+        menubar.add(propmenu);
+        
+        circlebutton = new JMenuItem("Distribucion circular");
+        circlebutton.addActionListener(new java.awt.event.ActionListener(){
+            public void actionPerformed(java.awt.event.ActionEvent e){
+                circle.execute(parent);
+            }
+        });
+        layoutmenu.add(circlebutton);
+        
+        /*organicbutton = new JMenuItem("Distribucion organica");
+        organicbutton.addActionListener(new java.awt.event.ActionListener(){
+            public void actionPerformed(java.awt.event.ActionEvent e){
+                organic.execute(parent);
+            }
+        });
+        layoutmenu.add(organicbutton);*/
+        
+        menubar.add(layoutmenu);
         
         //Configura JTextArea
        textOut.setEditable(false);
@@ -154,21 +182,34 @@ public class Visualizer extends JFrame
         graph.setCellsResizable(false); //No permitir vertices redimensionables
         
         //Crea el estilo ROUNDED para aplicar a los vertices
-        mxStylesheet stylesheet = graph.getStylesheet();
+        stylesheet = graph.getStylesheet();
         Hashtable<String, Object> style = new Hashtable<String, Object>();
-        
-        style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
+        Hashtable<String, Object> style2 = new Hashtable<String, Object>();
+        Hashtable<String, Object> style3 = new Hashtable<String, Object>();
+        stylesheet.getDefaultEdgeStyle().put(mxConstants.STYLE_ENDARROW, mxConstants.NONE);
+        stylesheet.getDefaultVertexStyle().put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
+
         style.put(mxConstants.STYLE_OPACITY, 65);
         style.put(mxConstants.STYLE_FONTCOLOR, "#ffe28a");
         style.put(mxConstants.STYLE_FILLCOLOR, "#fb2e01");
         style.put(mxConstants.STYLE_FONTSIZE, 14);
         style.put(mxConstants.STYLE_STROKECOLOR, "#");
         style.put(mxConstants.STYLE_STROKE_OPACITY, 100);
-        stylesheet.getDefaultEdgeStyle().put(mxConstants.STYLE_ENDARROW, mxConstants.NONE);
         stylesheet.putCellStyle("ELLIPSE", style);
         
+        style2.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
+        style2.put(mxConstants.STYLE_OPACITY, 65);
+        style2.put(mxConstants.STYLE_FONTCOLOR, "#ffe28a");
+        style2.put(mxConstants.STYLE_FILLCOLOR, "#fb2e01");
+        style2.put(mxConstants.STYLE_FONTSIZE, 14);
+        style2.put(mxConstants.STYLE_STROKECOLOR, "#");
+        stylesheet.putCellStyle("DIGRAFO", style2);
+        
+        style3.put(mxConstants.STYLE_ENDARROW, mxConstants.NONE);
+        stylesheet.putCellStyle("GRAFO", style3);
+        
         //Crear boton para agregar vertices
-        circleVertex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/dot_circle1600 copia.png"))); // NOI18N
+        circleVertex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/add32.png"))); // NOI18N
         circleVertex.setFocusable(false);
         circleVertex.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -176,9 +217,7 @@ public class Visualizer extends JFrame
             graph.getModel().beginUpdate();
             try
             {
-                Object v1 = graph.insertVertex(parent, null, index, 200, 150, 35, 35, "ELLIPSE");  
-                vertices.add(graph.getChildVertices(parent));
-                //edgenum = edgenum + ((mxCell)vertices.get(index)).getEdgeCount();
+                Object v1 = graph.insertVertex(parent, null, index, x + (index * 32), y, 35, 35, "ELLIPSE");  
                 index++;            
 
             }
@@ -188,7 +227,7 @@ public class Visualizer extends JFrame
                 graph.getModel().endUpdate();
 
             }
-
+      
             mxGraphComponent graphComponent = new mxGraphComponent(graph);
             mxRubberband rubber = new mxRubberband(graphComponent);
             canvas.add(graphComponent);
@@ -197,13 +236,23 @@ public class Visualizer extends JFrame
         }
         });
         
-        deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/dot_circle1600 copia.png"))); // NOI18N
+        deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/remove32.png"))); // NOI18N
         deleteButton.setFocusable(false);
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
            graph.removeCells();
         }
         });
+        
+        //configurar paneles
+        output.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153), 1));
+        toolbar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153), 1));
+        canvas.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        
+        toolbar.setBackground(new java.awt.Color(210, 212, 220));
+        output.setBackground(new java.awt.Color(248, 248, 250));
+        textOut.setForeground(new java.awt.Color(75, 75, 75));
+        textOut.setBackground(new java.awt.Color(248, 248, 250));
         
         toolbar.setLayout(new BoxLayout(toolbar, Y_AXIS));
         output.setLayout(new GridBagLayout());
@@ -226,7 +275,7 @@ public class Visualizer extends JFrame
     public class newPanel extends JPanel{
         public newPanel(){
             this.setLayout(new BorderLayout());
-            this.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+            //this.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         }
     }
     public static void main(String[] args)
